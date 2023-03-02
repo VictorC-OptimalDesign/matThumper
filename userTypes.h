@@ -19,17 +19,16 @@ typedef struct alarm_t
 
 typedef enum mode_
 {
-  mode_reset = 0,
-  mode_leftOn = 1,
-  mode_leftOff = 2,
-  mode_rightOn = 3,
-  mode_rightOff = 4,
+  mode_off = 0,
+  mode_left = 1,
+  mode_right = 2,
 } mode_t;
 
 typedef struct step_t
 {
   mode_t mode;
-  uint32_t durationMS;
+  uint32_t durationLowerMS;
+  uint32_t durationUpperMS;
 } step_t;
 
 typedef struct program_t

@@ -6,11 +6,69 @@
 #include "userTypes.h"
 
 
+// === DEFINES =================================================================
+
+// Duration for off between shots.
+#define OFF_SHOT_LOWER_MS               (15000u)
+#define OFF_SHOT_UPPER_MS               (20000u)
+
+// Duration for off when gathering arrows.
+#define OFF_GATHER_LOWER_MS             (45000u)
+#define OFF_GATHER_UPPER_MS             (75000u)
+
+// Duration for left/right thump.
+#define ON_LOWER_MS                     (1500u)
+#define ON_UPPER_MS                     (1500u)
+
+
 // === GLOBAL CONSTANTS ========================================================
 
-/// Version string.
-static char* const Version = "0.0.2";
+// Version string.
+static char* const Version = "0.0.7";
 
+// Program 1
+static step_t const Steps1[] =
+{
+  { mode_left, ON_LOWER_MS, ON_UPPER_MS },
+  { mode_off, OFF_SHOT_LOWER_MS, OFF_SHOT_UPPER_MS },
+  { mode_right, ON_LOWER_MS, ON_UPPER_MS },
+  { mode_off, OFF_SHOT_LOWER_MS, OFF_SHOT_UPPER_MS },
+};
+static program_t const Program1 =
+{
+  .steps = Steps1,
+  .numberOfSteps = sizeof(Steps1) / sizeof(step_t),
+};
+
+// Program 2
+static step_t const Steps2[] =
+{
+  { mode_left, ON_LOWER_MS, ON_UPPER_MS },    // 1
+  { mode_off, OFF_SHOT_LOWER_MS, OFF_SHOT_UPPER_MS },
+  { mode_right, ON_LOWER_MS, ON_UPPER_MS },   // 2
+  { mode_off, OFF_SHOT_LOWER_MS, OFF_SHOT_UPPER_MS },
+  { mode_left, ON_LOWER_MS, ON_UPPER_MS },    // 3
+  { mode_off, OFF_SHOT_LOWER_MS, OFF_SHOT_UPPER_MS },
+  { mode_right, ON_LOWER_MS, ON_UPPER_MS },   // 4
+  { mode_off, OFF_SHOT_LOWER_MS, OFF_SHOT_UPPER_MS },
+  { mode_left, ON_LOWER_MS, ON_UPPER_MS },    // 5
+  { mode_off, OFF_GATHER_LOWER_MS, OFF_GATHER_UPPER_MS },
+  { mode_right, ON_LOWER_MS, ON_UPPER_MS },   // 1
+  { mode_off, OFF_SHOT_LOWER_MS, OFF_SHOT_UPPER_MS },
+  { mode_left, ON_LOWER_MS, ON_UPPER_MS },    // 2
+  { mode_off, OFF_SHOT_LOWER_MS, OFF_SHOT_UPPER_MS },
+  { mode_right, ON_LOWER_MS, ON_UPPER_MS },   // 3
+  { mode_off, OFF_SHOT_LOWER_MS, OFF_SHOT_UPPER_MS },
+  { mode_left, ON_LOWER_MS, ON_UPPER_MS },    // 4
+  { mode_off, OFF_SHOT_LOWER_MS, OFF_SHOT_UPPER_MS },
+  { mode_right, ON_LOWER_MS, ON_UPPER_MS },   // 5
+  { mode_off, OFF_GATHER_LOWER_MS, OFF_GATHER_UPPER_MS },
+};
+static program_t const Program2 =
+{
+  .steps = Steps2,
+  .numberOfSteps = sizeof(Steps2) / sizeof(step_t),
+};
 
 // === GLOBAL VARIABLES ========================================================
 
@@ -81,35 +139,16 @@ static void processInput(void)
 
       case '1':
       {
-        static step_t const steps[] =
-        {
-          {
-            .mode = mode_reset,
-            .durationMS = 13000,
-          },
-          {
-            .mode = mode_leftOn,
-            .durationMS = 1000,
-          },
-          {
-            .mode = mode_leftOff,
-            .durationMS = 14000,
-          },
-          {
-            .mode = mode_rightOn,
-            .durationMS = 1000,
-          },
-          {
-            .mode = mode_rightOff,
-            .durationMS = 1000,
-          },
-        };
-        static program_t const program =
-        {
-          .steps = steps,
-          .numberOfSteps = sizeof(steps) / sizeof(step_t),
-        };
-        solenoid_startProgram(&program);
+        
+        solenoid_startProgram(&Program1);
+        solenoid_printStatus();
+      }
+      break;
+
+      case '2':
+      {
+        
+        solenoid_startProgram(&Program2);
         solenoid_printStatus();
       }
       break;
@@ -140,7 +179,12 @@ void setup()
 
   printf("\nMAT-101: Mathews Thumper (ver. %s)\n", Version);
 
+  randomSeed(analogRead(0));
+
   solenoid_init();
+  delay(100);
+  solenoid_printHeader();
+  delay(500);
   solenoid_printStatus();
 }
 

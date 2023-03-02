@@ -45,20 +45,12 @@ static void updateSolenoid(mode_t mode)
 {
   switch (mode)
   {
-    case mode_leftOn:
+    case mode_left:
       solenoid_enableLeft(true);
       break;
 
-    case mode_leftOff:
-      solenoid_enableLeft(false);
-      break;
-
-    case mode_rightOn:
+    case mode_right:
       solenoid_enableRight(true);
-      break;
-
-    case mode_rightOff:
-      solenoid_enableRight(false);
       break;
 
     default:
@@ -67,15 +59,37 @@ static void updateSolenoid(mode_t mode)
   }
 }
 
+static uint32_t getDuration(step_t const step)
+{
+  if (step.durationLowerMS == step.durationUpperMS)
+    return step.durationLowerMS;
+  else if (step.durationLowerMS < step.durationUpperMS)
+    return (uint32_t)random(step.durationLowerMS, step.durationUpperMS);
+  else
+    return (uint32_t)random(step.durationUpperMS, step.durationLowerMS);
+}
+
 
 // === PUBLIC FUNCTIONS ========================================================
 
+void solenoid_printHeader(void)
+{
+  printf("time(ms),state,left=,right=,mode,dTime(ms),\n");
+}
+
 void solenoid_printStatus(void)
 {
+  static uint32_t lastPrintTimeMS = 0u;
   static char const* LeftString = "<<  ";
   static char const* OffString = " -- ";
   static char const* RightString = "  >>";
   static char const* InvalidString = "????";
+  static char const* ModeString[] =
+  {
+    "off",
+    "left",
+    "right",
+  };
 
   char const* stateString = OffString;
   if (leftEnabled)
@@ -88,23 +102,20 @@ void solenoid_printStatus(void)
   else if (rightEnabled)
     stateString = RightString;
 
-  printf("%lu,%s,left=%u,right=%u,",
-    millis(),
-    stateString,
-    leftEnabled, rightEnabled);
+  char const* modeString = "--";
   if ((activeProgram != NULL) && (programStatus.enabled))
   {
-    static char const* ModeString[] =
-    {
-      "reset",
-      "left on",
-      "left off",
-      "right on",
-      "right off",
-    };
-    printf("%s,", ModeString[activeProgram->steps[programStatus.step].mode]);
+    modeString = ModeString[activeProgram->steps[programStatus.step].mode];
   }
-  printf("\n");
+  uint32_t currentTimeMS = millis();
+  printf("%lu,%s,left=%u,right=%u,%s,%lu,\n",
+    currentTimeMS,
+    stateString,
+    leftEnabled, rightEnabled,
+    modeString,
+    currentTimeMS - lastPrintTimeMS);
+
+  lastPrintTimeMS = currentTimeMS;
 }
 
 void solenoid_enableLeft(bool enable)
@@ -160,7 +171,9 @@ void solenoid_startProgram(program_t const* program)
     activeProgram = program;
     resetProgramStatus();
     programStatus.enabled = true;
-    uint32_t durationMS = activeProgram->steps[programStatus.step].durationMS;
+
+    updateSolenoid(activeProgram->steps[programStatus.step].mode);
+    uint32_t durationMS = getDuration(activeProgram->steps[programStatus.step]);
     alarm_arm(&programStatus.alarm, durationMS);
   }
 }
@@ -189,7 +202,7 @@ void solenoid_process(void)
 
       updateSolenoid(activeProgram->steps[programStatus.step].mode);
 
-      uint32_t durationMS = activeProgram->steps[programStatus.step].durationMS;
+      uint32_t durationMS = getDuration(activeProgram->steps[programStatus.step]);
       alarm_arm(&programStatus.alarm, durationMS);
       solenoid_printStatus();
     }
