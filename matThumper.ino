@@ -9,7 +9,7 @@
 // === GLOBAL CONSTANTS ========================================================
 
 /// Version string.
-static char* const Version = "0.0.1";
+static char* const Version = "0.0.2";
 
 
 // === GLOBAL VARIABLES ========================================================
@@ -29,10 +29,104 @@ int sput(char c, __attribute__((unused)) FILE* f)
 
 // === PRIVATE FUNCTIONS =======================================================
 
+static void processInput(void)
+{
+  if (Serial.available())
+  {
+    int c = Serial.read();
+    switch (c)
+    {
+      case '\n':
+      {
+        solenoid_printStatus();
+      }
+      break;
+      
+      case 'L':
+      case 'l':
+      {
+        solenoid_stopProgram();
+        solenoid_enableLeft(true);
+        solenoid_printStatus();
+      }
+      break;
+
+      case 'R':
+      case 'r':
+      {
+        solenoid_stopProgram();
+        solenoid_enableRight(true);
+        solenoid_printStatus();
+      }
+      break;
+
+      case 'N':
+      case 'O':
+      case 'n':
+      case 'o':
+      {
+        solenoid_stopProgram();
+        solenoid_enableLeft(false);
+        solenoid_enableRight(false);
+        solenoid_printStatus();
+      }
+      break;
+
+      case '0':
+      {
+        solenoid_stopProgram();
+        solenoid_printStatus();
+      }
+      break;
+
+      case '1':
+      {
+        static step_t const steps[] =
+        {
+          {
+            .mode = mode_reset,
+            .durationMS = 13000,
+          },
+          {
+            .mode = mode_leftOn,
+            .durationMS = 1000,
+          },
+          {
+            .mode = mode_leftOff,
+            .durationMS = 14000,
+          },
+          {
+            .mode = mode_rightOn,
+            .durationMS = 1000,
+          },
+          {
+            .mode = mode_rightOff,
+            .durationMS = 1000,
+          },
+        };
+        static program_t const program =
+        {
+          .steps = steps,
+          .numberOfSteps = sizeof(steps) / sizeof(step_t),
+        };
+        solenoid_startProgram(&program);
+        solenoid_printStatus();
+      }
+      break;
+
+      default:
+      {
+        // Do nothing for now.
+      }
+
+    }
+  }
+}
 
 // === ARDUINO FUNCTIONS =======================================================
 
-void setup() {
+void setup()
+{
   // put your setup code here, to run once:
 
   // Updated the baud rate based on the following reference to reduce the error;
@@ -50,47 +144,8 @@ void setup() {
   solenoid_printStatus();
 }
 
-void loop() {
-  if (Serial.available())
-  {
-    int c = Serial.read();
-    switch (c)
-    {
-      case '\n':
-      {
-        solenoid_printStatus();
-      }
-      break;
-      
-      case 'L':
-      case 'l':
-      {
-        solenoid_enableLeft(true);
-        solenoid_printStatus();
-      }
-      break;
-
-      case 'R':
-      case 'r':
-      {
-        solenoid_enableRight(true);
-        solenoid_printStatus();
-      }
-      break;
-
-      case '0':
-      case 'N':
-      case 'O':
-      case 'n':
-      case 'o':
-      {
-        solenoid_enableLeft(false);
-        solenoid_enableRight(false);
-        solenoid_printStatus();
-      }
-      break;
-
-    }
-  }
-
+void loop()
+{
+  processInput();
+  solenoid_process();
 }

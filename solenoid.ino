@@ -13,8 +13,62 @@ static int const DisableSolenoidDelayMS = 100;
 
 static bool leftEnabled = false;
 static bool rightEnabled = false;
+static programStatus_t programStatus =
+{
+  .enabled = false,
+  .step = 0u,
+  .alarm =
+  {
+    .startTimeMS = 0u,
+    .durationMS = 0u,
+    .armed = false,    
+  },
+};
+static program_t const* activeProgram = NULL;
 
-// === FUNCTIONS ===============================================================
+
+// === PRIVATE FUNCTIONS =======================================================
+
+static resetProgramStatus(void)
+{
+  programStatus.enabled = false;
+  programStatus.step = 0u;
+  programStatus.alarm =
+  {
+    .startTimeMS = 0u,
+    .durationMS = 0u,
+    .armed = false,
+  };
+}
+
+static void updateSolenoid(mode_t mode)
+{
+  switch (mode)
+  {
+    case mode_leftOn:
+      solenoid_enableLeft(true);
+      break;
+
+    case mode_leftOff:
+      solenoid_enableLeft(false);
+      break;
+
+    case mode_rightOn:
+      solenoid_enableRight(true);
+      break;
+
+    case mode_rightOff:
+      solenoid_enableRight(false);
+      break;
+
+    default:
+      solenoid_enableLeft(false);
+      solenoid_enableRight(false);
+  }
+}
+
+
+// === PUBLIC FUNCTIONS ========================================================
 
 void solenoid_printStatus(void)
 {
@@ -34,10 +88,23 @@ void solenoid_printStatus(void)
   else if (rightEnabled)
     stateString = RightString;
 
-  printf("%lu,%s,left=%u,right=%u,\n",
+  printf("%lu,%s,left=%u,right=%u,",
     millis(),
     stateString,
     leftEnabled, rightEnabled);
+  if ((activeProgram != NULL) && (programStatus.enabled))
+  {
+    static char const* ModeString[] =
+    {
+      "reset",
+      "left on",
+      "left off",
+      "right on",
+      "right off",
+    };
+    printf("%s,", ModeString[activeProgram->steps[programStatus.step].mode]);
+  }
+  printf("\n");
 }
 
 void solenoid_enableLeft(bool enable)
@@ -84,4 +151,47 @@ void solenoid_init(void)
 
   digitalWrite(Right, Off);
   rightEnabled = false;
+}
+
+void solenoid_startProgram(program_t const* program)
+{
+  if ((program != NULL) && (program->steps != NULL) && (!programStatus.enabled))
+  {
+    activeProgram = program;
+    resetProgramStatus();
+    programStatus.enabled = true;
+    uint32_t durationMS = activeProgram->steps[programStatus.step].durationMS;
+    alarm_arm(&programStatus.alarm, durationMS);
+  }
+}
+
+void solenoid_stopProgram(void)
+{
+  if (programStatus.enabled)
+  {
+    resetProgramStatus();
+    activeProgram = NULL;
+    solenoid_enableLeft(false);
+    solenoid_enableRight(false);
+  }
+}
+
+void solenoid_process(void)
+{
+  if ((activeProgram != NULL) && (programStatus.enabled))
+  {
+    if (alarm_hasElapsed(&programStatus.alarm))
+    {
+      
+      ++programStatus.step;
+      if (programStatus.step >= activeProgram->numberOfSteps)
+        programStatus.step = 0u;
+
+      updateSolenoid(activeProgram->steps[programStatus.step].mode);
+
+      uint32_t durationMS = activeProgram->steps[programStatus.step].durationMS;
+      alarm_arm(&programStatus.alarm, durationMS);
+      solenoid_printStatus();
+    }
+  }
 }
