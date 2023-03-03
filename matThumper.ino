@@ -9,16 +9,20 @@
 // === DEFINES =================================================================
 
 // Duration for off between shots.
-#define OFF_SHOT_LOWER_MS               (15000u)
-#define OFF_SHOT_UPPER_MS               (20000u)
+#define BETWEEN_SHOT_LOWER_MS           (12000u)
+#define BETWEEN_SHOT_UPPER_MS           (20000u)
 
 // Duration for off when gathering arrows.
 #define OFF_GATHER_LOWER_MS             (60000u)
 #define OFF_GATHER_UPPER_MS             (75000u)
 
-// Duration for left/right thump.
+// Duration for left/right thump (solenoid on).
 #define ON_LOWER_MS                     (1500u)
 #define ON_UPPER_MS                     (1500u)
+
+// Duration for when the solenoid is off.
+#define OFF_SHOT_LOWER_MS               (BETWEEN_SHOT_LOWER_MS - ON_LOWER_MS)
+#define OFF_SHOT_UPPER_MS               (BETWEEN_SHOT_UPPER_MS - ON_UPPER_MS)
 
 
 // === GLOBAL CONSTANTS ========================================================
