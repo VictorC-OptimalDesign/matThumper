@@ -13,7 +13,7 @@
 #define OFF_SHOT_UPPER_MS               (20000u)
 
 // Duration for off when gathering arrows.
-#define OFF_GATHER_LOWER_MS             (45000u)
+#define OFF_GATHER_LOWER_MS             (60000u)
 #define OFF_GATHER_UPPER_MS             (75000u)
 
 // Duration for left/right thump.
@@ -24,15 +24,15 @@
 // === GLOBAL CONSTANTS ========================================================
 
 // Version string.
-static char* const Version = "0.0.7";
+static char* const Version = "0.0.8";
 
 // Program 1
 static step_t const Steps1[] =
 {
   { mode_left, ON_LOWER_MS, ON_UPPER_MS },
-  { mode_off, OFF_SHOT_LOWER_MS, OFF_SHOT_UPPER_MS },
+  { mode_off, OFF_SHOT_LOWER_MS, OFF_SHOT_LOWER_MS },
   { mode_right, ON_LOWER_MS, ON_UPPER_MS },
-  { mode_off, OFF_SHOT_LOWER_MS, OFF_SHOT_UPPER_MS },
+  { mode_off, OFF_SHOT_LOWER_MS, OFF_SHOT_LOWER_MS },
 };
 static program_t const Program1 =
 {
@@ -42,6 +42,20 @@ static program_t const Program1 =
 
 // Program 2
 static step_t const Steps2[] =
+{
+  { mode_left, ON_LOWER_MS, ON_UPPER_MS },
+  { mode_off, OFF_SHOT_LOWER_MS, OFF_SHOT_UPPER_MS },
+  { mode_right, ON_LOWER_MS, ON_UPPER_MS },
+  { mode_off, OFF_SHOT_LOWER_MS, OFF_SHOT_UPPER_MS },
+};
+static program_t const Program2 =
+{
+  .steps = Steps2,
+  .numberOfSteps = sizeof(Steps2) / sizeof(step_t),
+};
+
+// Program 3
+static step_t const Steps3[] =
 {
   { mode_left, ON_LOWER_MS, ON_UPPER_MS },    // 1
   { mode_off, OFF_SHOT_LOWER_MS, OFF_SHOT_UPPER_MS },
@@ -64,10 +78,10 @@ static step_t const Steps2[] =
   { mode_right, ON_LOWER_MS, ON_UPPER_MS },   // 5
   { mode_off, OFF_GATHER_LOWER_MS, OFF_GATHER_UPPER_MS },
 };
-static program_t const Program2 =
+static program_t const Program3 =
 {
-  .steps = Steps2,
-  .numberOfSteps = sizeof(Steps2) / sizeof(step_t),
+  .steps = Steps3,
+  .numberOfSteps = sizeof(Steps3) / sizeof(step_t),
 };
 
 // === GLOBAL VARIABLES ========================================================
@@ -139,7 +153,6 @@ static void processInput(void)
 
       case '1':
       {
-        
         solenoid_startProgram(&Program1);
         solenoid_printStatus();
       }
@@ -147,8 +160,14 @@ static void processInput(void)
 
       case '2':
       {
-        
         solenoid_startProgram(&Program2);
+        solenoid_printStatus();
+      }
+      break;
+
+      case '3':
+      {
+        solenoid_startProgram(&Program3);
         solenoid_printStatus();
       }
       break;
