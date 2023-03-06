@@ -17,8 +17,8 @@
 #define OFF_GATHER_UPPER_MS             (75000u)
 
 // Duration for left/right thump (solenoid on).
-#define ON_LOWER_MS                     (1500u)
-#define ON_UPPER_MS                     (1500u)
+#define ON_LOWER_MS                     (250u)
+#define ON_UPPER_MS                     (250u)
 
 // Duration for when the solenoid is off.
 #define OFF_SHOT_LOWER_MS               (BETWEEN_SHOT_LOWER_MS - ON_LOWER_MS)
@@ -28,7 +28,7 @@
 // === GLOBAL CONSTANTS ========================================================
 
 // Version string.
-static char* const Version = "0.0.8";
+static char* const Version = "0.0.10";
 
 // Program 1
 static step_t const Steps1[] =

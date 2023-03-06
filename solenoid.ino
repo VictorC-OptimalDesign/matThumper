@@ -6,7 +6,7 @@ static int const Right = 4;
 static int const Off = HIGH;
 static int const On = LOW;
 
-static int const DisableSolenoidDelayMS = 100;
+static int const DisableSolenoidDelayMS = 1000;
 
 
 // === GLOBAL VARIABLES ========================================================
