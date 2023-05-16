@@ -3,8 +3,8 @@
 static int const Left = 3;
 static int const Right = 4;
 
-static int const Off = HIGH;
-static int const On = LOW;
+static int const Off = LOW;
+static int const On = HIGH;
 
 static int const DisableSolenoidDelayMS = 1000;
 

@@ -28,7 +28,7 @@
 // === GLOBAL CONSTANTS ========================================================
 
 // Version string.
-static char* const Version = "0.0.10";
+static char* const Version = "0.0.11";
 
 // Program 1
 static step_t const Steps1[] =
